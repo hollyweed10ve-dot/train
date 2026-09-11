@@ -1,4 +1,4 @@
-const CACHE_NAME = "train-v1";
+const CACHE_NAME = "train-v2";
 
 const APP_SHELL = [
   "./",
