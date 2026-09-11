@@ -722,13 +722,14 @@ function openWorkout(workoutId) {
                     style="
                         background:none;
                         border:none;
-                        font-size:30px;
+                        font-size:18px;
+                        font-weight:600;
                         cursor:pointer;
                         padding:0;
                         margin-right:12px;
                     "
                 >
-                    ‹
+                    ← Назад
                 </button>
 
 
@@ -931,9 +932,11 @@ function renderExerciseList(workoutId) {
                         "
                     >
 
-                        Выполнено:
-
-                        ${completedSets}/${exercise.sets}
+                        ${
+                            completedSets >= exercise.sets
+                                ? "Выполнено ✓"
+                                : `Выполнено: ${completedSets}/${exercise.sets}`
+                        }
 
                     </p>
 
@@ -1026,13 +1029,14 @@ function startExercise(
                     style="
                         background:none;
                         border:none;
-                        font-size:30px;
+                        font-size:18px;
+                        font-weight:600;
                         cursor:pointer;
                         padding:0;
                         margin-right:12px;
                     "
                 >
-                    ‹
+                    ← Назад
                 </button>
 
 
@@ -1132,6 +1136,18 @@ function startExercise(
                     </h2>
 
 
+                    <p
+                        style="
+                            color:#888;
+                            font-size:13px;
+                            margin-top:-8px;
+                            margin-bottom:15px;
+                        "
+                    >
+                        Вес и повторы сохраняются автоматически
+                    </p>
+
+
                     <div
                         id="setsContainer"
                     ></div>
@@ -1139,23 +1155,9 @@ function startExercise(
                 </section>
 
 
-                <button
-                    id="finishExerciseButton"
-                    style="
-                        width:100%;
-                        padding:16px;
-                        margin-top:20px;
-                        border:none;
-                        border-radius:14px;
-                        background:#000;
-                        color:#fff;
-                        font-size:16px;
-                        font-weight:600;
-                        cursor:pointer;
-                    "
-                >
-                    Назад к тренировке
-                </button>
+                <div
+                    id="exerciseNavigation"
+                ></div>
 
             </main>
 
@@ -1178,28 +1180,163 @@ function startExercise(
         );
 
 
-    document
-        .getElementById(
-            "finishExerciseButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                openWorkout(
-                    workoutId
-                );
-
-            }
-        );
-
-
     renderSets(
         workoutId,
         exerciseIndex,
         exercise,
         data
     );
+
+
+    renderExerciseNavigation(
+        workoutId,
+        exerciseIndex,
+        exercise
+    );
+
+}
+
+
+// ============================================================
+// НАВИГАЦИЯ ПОСЛЕ ЗАВЕРШЕНИЯ УПРАЖНЕНИЯ
+// ============================================================
+
+function renderExerciseNavigation(
+    workoutId,
+    exerciseIndex,
+    exercise
+) {
+
+    const container =
+        document.getElementById(
+            "exerciseNavigation"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    const data =
+        getExerciseData(
+            workoutId,
+            exerciseIndex
+        );
+
+
+    const completedSets =
+        data.sets
+            ? data.sets.filter(
+                set =>
+                    set &&
+                    set.reps !== undefined &&
+                    set.reps !== ""
+            ).length
+            : 0;
+
+
+    // Пока не выполнены все подходы —
+    // кнопка следующего упражнения скрыта
+    if (
+        completedSets <
+        exercise.sets
+    ) {
+
+        container.innerHTML = "";
+
+        return;
+
+    }
+
+
+    const isLastExercise =
+        exerciseIndex + 1 >=
+        workouts[workoutId]
+            .exercises.length;
+
+
+    container.innerHTML = `
+
+        <div
+            style="
+                background:#f0f0f0;
+                padding:14px;
+                border-radius:14px;
+                margin-top:20px;
+                text-align:center;
+                font-size:15px;
+                font-weight:600;
+            "
+        >
+            ✅ Все подходы выполнены
+        </div>
+
+
+        <button
+            id="nextExerciseButton"
+            style="
+                width:100%;
+                padding:16px;
+                margin-top:12px;
+                border:none;
+                border-radius:14px;
+                background:#000;
+                color:#fff;
+                font-size:16px;
+                font-weight:600;
+                cursor:pointer;
+            "
+        >
+            ${
+                isLastExercise
+                    ? "Завершить тренировку ✓"
+                    : "Следующее упражнение →"
+            }
+        </button>
+
+    `;
+
+
+    document
+        .getElementById(
+            "nextExerciseButton"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                // Последнее упражнение
+                if (isLastExercise) {
+
+                    saveWorkoutToHistory(
+                        workoutId
+                    );
+
+
+                    alert(
+                        "Тренировка завершена 💪"
+                    );
+
+
+                    openWorkout(
+                        workoutId
+                    );
+
+
+                    return;
+
+                }
+
+
+                // Следующее упражнение
+                startExercise(
+                    workoutId,
+                    exerciseIndex + 1
+                );
+
+            }
+        );
 
 }
 
@@ -1350,7 +1487,7 @@ function renderSets(
 
 
         // ====================================================
-        // АВТОСОХРАНЕНИЕ ВЕСА И ПОВТОРОВ
+        // АВТОСОХРАНЕНИЕ
         // ====================================================
 
         const weightInput =
@@ -1461,7 +1598,7 @@ function completeSet(
     }
 
 
-    // Сохраняем перед запуском таймера
+    // Сохраняем подход
     saveSet(
         workoutId,
         exerciseIndex,
@@ -1471,70 +1608,16 @@ function completeSet(
     );
 
 
+    // После выполнения подхода запускаем отдых.
+    // После отдыха остаёмся в ЭТОМ ЖЕ упражнении.
     showRestTimer(
         exercise.rest,
         () => {
 
-            const data =
-                getExerciseData(
-                    workoutId,
-                    exerciseIndex
-                );
-
-
-            const completedSets =
-                data.sets
-                    ? data.sets.filter(
-                        set =>
-                            set &&
-                            set.reps !== undefined &&
-                            set.reps !== ""
-                    ).length
-                    : 0;
-
-
-            if (
-                completedSets >=
-                exercise.sets
-            ) {
-
-                if (
-                    exerciseIndex + 1 <
-                    workouts[workoutId]
-                        .exercises.length
-                ) {
-
-                    startExercise(
-                        workoutId,
-                        exerciseIndex + 1
-                    );
-
-                } else {
-
-                    saveWorkoutToHistory(
-                        workoutId
-                    );
-
-
-                    alert(
-                        "Тренировка завершена 💪"
-                    );
-
-
-                    openWorkout(
-                        workoutId
-                    );
-
-                }
-
-            } else {
-
-                startExercise(
-                    workoutId,
-                    exerciseIndex
-                );
-
-            }
+            startExercise(
+                workoutId,
+                exerciseIndex
+            );
 
         }
     );
@@ -1772,13 +1855,14 @@ function openPool() {
                     style="
                         background:none;
                         border:none;
-                        font-size:30px;
+                        font-size:18px;
+                        font-weight:600;
                         cursor:pointer;
                         padding:0;
                         margin-right:12px;
                     "
                 >
-                    ‹
+                    ← Назад
                 </button>
 
 
@@ -2325,13 +2409,14 @@ function showWorkoutHistory() {
                     style="
                         background:none;
                         border:none;
-                        font-size:30px;
+                        font-size:18px;
+                        font-weight:600;
                         cursor:pointer;
                         padding:0;
                         margin-right:12px;
                     "
                 >
-                    ‹
+                    ← Назад
                 </button>
 
 
