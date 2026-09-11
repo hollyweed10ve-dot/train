@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    >
+
+    <title>train</title>
+
+    <meta
+        name="description"
+        content="Твоя персональная программа тренировок"
+    >
+
+    <!-- PWA -->
+    <meta
+        name="theme-color"
+        content="#000000"
+    >
+
+    <link
+        rel="manifest"
+        href="manifest.json"
+    >
+
+    <!-- iPhone / iOS -->
+    <meta
+        name="apple-mobile-web-app-capable"
+        content="yes"
+    >
+
+    <meta
+        name="apple-mobile-web-app-status-bar-style"
+        content="default"
+    >
+
+    <meta
+        name="apple-mobile-web-app-title"
+        content="train"
+    >
+
+    <link
+        rel="apple-touch-icon"
+        href="icons/icon-192.png"
+    >
+
+    <!-- Стили -->
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+</head>
+
+
+<body>
+
+    <div class="app">
+
+        <header class="header">
+            <div>
+                <h1>train</h1>
+                <p>Твоя тренировка</p>
+            </div>
+        </header>
+
+
+        <main>
+
+            <section class="workout-list">
+
+                <button class="workout-card">
+                    <div class="workout-icon">🏋️</div>
+
+                    <div class="workout-info">
+                        <h2>День 1</h2>
+                        <p>Верх тела</p>
+                    </div>
+
+                    <div class="arrow">›</div>
+                </button>
+
+
+                <button class="workout-card">
+                    <div class="workout-icon">🦵</div>
+
+                    <div class="workout-info">
+                        <h2>День 2</h2>
+                        <p>Низ тела + руки</p>
+                    </div>
+
+                    <div class="arrow">›</div>
+                </button>
+
+
+                <button class="workout-card">
+                    <div class="workout-icon">💪</div>
+
+                    <div class="workout-info">
+                        <h2>День 5</h2>
+                        <p>Full Body</p>
+                    </div>
+
+                    <div class="arrow">›</div>
+                </button>
+
+
+                <button class="workout-card">
+                    <div class="workout-icon">🏊</div>
+
+                    <div class="workout-info">
+                        <h2>День 6</h2>
+                        <p>Бассейн</p>
+                    </div>
+
+                    <div class="arrow">›</div>
+                </button>
+
+
+                <button class="workout-card">
+                    <div class="workout-icon">😴</div>
+
+                    <div class="workout-info">
+                        <h2>Дни отдыха</h2>
+                        <p>Восстановление</p>
+                    </div>
+
+                    <div class="arrow">›</div>
+                </button>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <!-- Основное приложение -->
+    <script src="app.js"></script>
+
+
+    <!-- Service Worker для PWA -->
+    <script>
+        if ("serviceWorker" in navigator) {
+
+            window.addEventListener("load", function () {
+
+                navigator.serviceWorker
+                    .register("service-worker.js")
+                    .then(function (registration) {
+
+                        console.log(
+                            "Train Service Worker зарегистрирован:",
+                            registration.scope
+                        );
+
+                    })
+                    .catch(function (error) {
+
+                        console.log(
+                            "Ошибка регистрации Service Worker:",
+                            error
+                        );
+
+                    });
+
+            });
+
+        }
+    </script>
+
+</body>
+
+</html>
